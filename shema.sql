@@ -1,0 +1,10 @@
+-- Active: 1747844755736@@127.0.0.1@5432@GolangNews@public
+DROP TABLE IF EXISTS posts;
+
+CREATE TABLE posts (
+id SERIAL PRIMARY KEY,
+title TEXT NOT NULL,
+content TEXT NOT NULL,
+pubTime BIGINT NOT NULL,
+link TEXT NOT NULL
+);
