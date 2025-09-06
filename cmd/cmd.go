@@ -10,6 +10,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 // Структура конфиг файла
@@ -34,8 +36,6 @@ func ParseConfig(fileName string) (Config, error) {
 	return config, nil
 }
 
-const dsn = "postgres://postgres:12345@127.0.0.1:5432/GolangNews"
-
 func main() {
 	var wg sync.WaitGroup
 
@@ -45,7 +45,16 @@ func main() {
 	//Канал для ошибок
 	errorChan := make(chan error, 5)
 
+	//Подгрузка переменных из .env в окружение
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Файл .env не найден")
+	}
 	// Подключение к базе данных
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		log.Fatal("Переменная DB_DSN не задана. Убедитесь, что строка подключения корректна")
+	}
+	log.Println("Используется dsn:", dsn)
 	db, err := postgres.New(dsn)
 	if err != nil {
 		log.Fatal("Ошибка подключения к базе данных")
@@ -84,6 +93,10 @@ func main() {
 	}
 
 	//Запись XML-файлов в БД
+	err = db.AppToMap()
+	if err != nil {
+		log.Fatal("Ошибка записи данных из БД")
+	}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

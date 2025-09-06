@@ -39,6 +39,27 @@ func New(dsn string) (Store, error) {
 var CheckMap = make(map[string]bool)
 var CheckMutex sync.Mutex
 
+// Добавление в мапу существующих постов из БД
+func (s *Store) AppToMap() error {
+	rows, err := s.DB.Query(context.Background(), `
+	SELECT title FROM posts
+	`)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var p Post
+		err = rows.Scan(
+			&p.Title,
+		)
+		if err != nil {
+			return err
+		}
+		CheckMap[p.Title] = true
+	}
+	return nil
+}
+
 // Добавление публикаций
 func (s *Store) AddPost(postChan chan []rss.XML) error {
 
